@@ -55,7 +55,7 @@ reloaded_model.load_model("path/to/save/model.h5")
 motor-module-ae path/to/data --columns 1 2 3 4 5 6 7 8 9 10 --max-modules 4 --out path/to/results --ofmt folder
 ```
 
-## MATLAB integration
+## MATLAB integration - Work in progress
 The matlab integration uses the built-in python caller in matlab. This allows us to use all the ML dependencies like tensorflow and scikit-learn without having to start from the ground up. In order to use this in matlab, you will need to direct matlab to where your python runtime is. This will not work if you use Colab and do not have a local python environment.
 1) Follow the aboove quickstart instructions up until you have a conda environment that can effectively import the required libraries. Run the following command in your terminal to check that everything is good to go
 ```console
