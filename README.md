@@ -1,5 +1,5 @@
 # motor-module-autoencoder
-Code for computing motor modules using an autoencoder
+Code for computing motor modules from electromyography (EMG) measured muscle activity, using an autoencoder
 
 ## Quickstart
 In order to use this package, please make sure that you have access to a GPU enabled runtime. This can be done easily with a conda environment, with the following command to install the cuda tools.
