@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "motor-module-autoencoder"
+version = "1.0.0"
+description = "Autoencoder for computing motor modules from EMG data"
+authors = [
+    { name = "Siddharth R. Nathella", email = "snathella@gatech.edu" }
+]
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "tensorflow<2.11.0; sys_platform == 'win32'",
+    "tensorflow[and-cuda]; sys_platform != 'win32'",
+    "scikit-learn",
+]
+
+[project.scripts]
+motor-module-autoencoder = "motor_module_autoencoder.training:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+ 
