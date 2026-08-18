@@ -31,6 +31,11 @@ class MotorModuleNNAE(K.Model):
         """Get the learned motor modules (synergies) from the decoder weights."""
         output_weights = self.decoder.get_layer('output').get_weights()[0]
         return output_weights
+
+    def bias(self):
+        """Get the learned bias terms from the decoder."""
+        output_bias = self.decoder.get_layer('output').get_weights()[1]
+        return output_bias
     
     def synergies(self):
         """Get the learned motor modules (synergies) from the decoder weights. Identical to calling `modules()`."""
@@ -163,43 +168,33 @@ class MotorModuleNNAE(K.Model):
         return model_to_use(X).numpy()
 
 if __name__ == "__main__":
-    SELECTED_MUSCLES = [0,4,7]
-    MAX_SYNS = 6
     import matplotlib.pyplot as plt
+    ### Example Usage ###
+    n_muscles = 11
+    n_dims = 3 # number of motor modules
+    model = MotorModuleNNAE(n_muscles, n_dims)
+    model.compile(optimizer='adam', loss='mse')
+    model.build((None, n_muscles))
+
+    data = np.loadtxt("example_data/example_subject.csv", delimiter=",") # shape (n_samples, n_muscles)
+    train_data = data[:int(0.8*data.shape[0]), :]
+    val_data = data[int(0.8*data.shape[0]):, :]
+    model.self_fit(train_data, verbose=1)
+
+    # Show the learned motor modules, its activations, and the reconstruction of the input data for an example muscle
+    modules = model.modules()
+    activations = model.activations(train_data)
+    recon = model.reconstruct(train_data)
+
+    # Plot the results
     plt.figure(figsize=(12, 8))
-    plotnum = 1
-    color_list = [
-        'xkcd:sea blue',
-        'xkcd:tangerine',
-        'xkcd:brick red',
-        'xkcd:emerald',
-        'xkcd:deep sky blue',
-        'xkcd:purple',
-    ]
-    SUBJECT = "AB10"
-    train_data = np.loadtxt(f"D:\\Dropbox-GT\\GaTech Dropbox\\ME-DboxMgmt-Young-Admins\\Siddharth Nathella\\Projects\\MuscleSynergyAutoencoder\\Code\\results\\camargo3\\ae\\{SUBJECT}\\train_data.csv", delimiter=",")
-    for n_syn in range(1, MAX_SYNS+1):
-        ae_model = MotorModuleNNAE(n_muscles=11, latent_dim=n_syn)
-        ae_model.load_model(f"D:\\Dropbox-GT\\GaTech Dropbox\\ME-DboxMgmt-Young-Admins\\Siddharth Nathella\\Projects\\MuscleSynergyAutoencoder\\Code\\results\\camargo3\\ae\\{SUBJECT}\\{n_syn}\\AE.h5")
-        recon = ae_model.reconstruct(train_data)
-        for i, m in enumerate(SELECTED_MUSCLES):
-            # First plot the complete reconstruction
-            plt.subplot(MAX_SYNS, len(SELECTED_MUSCLES), plotnum)
-            plt.plot(train_data[:1500, m], label="Original", color="k", linestyle='-.', linewidth=2)
-            plt.plot(recon[:1500, m], label="Reconstructed", color="grey", alpha=0.7, linestyle='-.', linewidth=2)
-            plt.xticks([])
-            plt.yticks([])
-            plt.ylim((0, 1))
-            # Remove spines
-            for spine in plt.gca().spines.values():
-                spine.set_visible(False)
-            for j in range(n_syn): # Plot the reconstruction from each synergy
-                recon_j = ae_model.reconstruct(train_data, using_modules=[j], using_bias=False)
-                plt.plot(recon_j[:1500, m], label=f"Syn {j+1}", alpha=0.7, linewidth=2, color=color_list[j])
-            # Show bias only reconstruction
-            recon_bias = ae_model.reconstruct(train_data, using_modules=[], using_bias=True)
-            plt.plot(recon_bias[:1500, m], label="Bias Only", color="r", alpha=0.7, linestyle=':', linewidth=2)
-            plotnum += 1
-    plt.tight_layout()
-    fig = plt.gcf()
-    fig.savefig("ae_reconstructions.pdf", bbox_inches='tight')
+    plt.subplot(1, 3, 1)
+    plt.title("Learned Motor Module 1")
+    plt.bar(range(n_muscles), modules[0, :], label="Module 1")
+    plt.subplot(1, 3, 2)
+    plt.title("Activations for Module 1")
+    plt.plot(activations[:, 0], label="Activation 1")
+    plt.subplot(1, 3, 3)
+    plt.title("Reconstruction of Muscle 1")
+    plt.plot(recon[:, 0], label="Reconstruction 1")
+    plt.show()
